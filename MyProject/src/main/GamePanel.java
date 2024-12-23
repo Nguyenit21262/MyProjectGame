@@ -57,8 +57,9 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void update(){
-
+        if (KeyHandle.pausePressed == false && pm.gameOver == false){
         pm.update();
+        }
     }
     
     public void paintComponent(Graphics g){
