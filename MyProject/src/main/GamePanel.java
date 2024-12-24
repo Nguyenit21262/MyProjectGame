@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Font;
 
 import javax.swing.JPanel;
 
@@ -15,6 +16,7 @@ public class GamePanel extends JPanel implements Runnable {
     final int FPS = 60;
     Thread gamThread;
     PlayManager pm;
+
     
     public GamePanel() {
 
@@ -26,6 +28,17 @@ public class GamePanel extends JPanel implements Runnable {
         this.setFocusable(true);
 
         pm = new PlayManager();
+
+        this.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent e) {
+                if (e.getKeyCode() == java.awt.event.KeyEvent.VK_X) { // Khi nhấn phím 'x'
+                    if (pm.gameOver) { // Nếu game đang kết thúc
+                        restartGame(); // Khởi động lại game
+                    }
+                }
+            }
+        });
     }
 
     public void launchGame(){
@@ -33,6 +46,7 @@ public class GamePanel extends JPanel implements Runnable {
         gamThread.start();
 
     }
+
 
     @Override
     public void run() {
@@ -61,12 +75,34 @@ public class GamePanel extends JPanel implements Runnable {
         pm.update();
         }
     }
+
+    private void restartGame() {
+        if (gamThread != null) {
+            gamThread.interrupt(); // Dừng thread cũ
+            gamThread = null;
+        }
+
+        pm.reset(); // Reset trạng thái trong PlayManager
+
+        gamThread = new Thread(this); // Tạo thread mới
+        gamThread.start(); // Bắt đầu lại game
+    }
     
     public void paintComponent(Graphics g){
         super.paintComponent(g);
 
         Graphics2D g2 = (Graphics2D)g;
-        pm.draw(g2);
+        pm.drawAreaPlay(g2);
+        //pm.drawScoreArea(g2);
+
+        if (pm.gameOver) {
+            g2.setFont(new Font("Arial", Font.BOLD, 50));
+            g2.setColor(Color.RED);
+            g2.drawString("GAME OVER", WIDTH / 2 - 150, HEIGHT / 2 - 50);
+            g2.setFont(new Font("Arial", Font.PLAIN, 20));
+            g2.setColor(Color.WHITE);
+            g2.drawString("Press 'x' to restart", WIDTH / 2 - 100, HEIGHT / 2);
+        }
     }
 }
 

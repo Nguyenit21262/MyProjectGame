@@ -76,6 +76,7 @@ public class Mino {
             }
         }
     }
+
     public void checkRotationCollision(){
         leftCollision = false;
         rightCollision = false;
@@ -153,6 +154,7 @@ public class Mino {
         }
 
         if(KeyHandle.downPressed){
+            if(bottomCollision == false){
             b[0].y += Block.SIZE;
             b[1].y += Block.SIZE;
             b[2].y += Block.SIZE;
@@ -160,22 +162,25 @@ public class Mino {
 
             //when move down ,reset the autoCouter
             autoDropCounter = 0;
+            }
             KeyHandle.downPressed = false;
         }
         if(KeyHandle.leftPressed){
+            if(leftCollision == false){
             b[0].x -= Block.SIZE;
             b[1].x -= Block.SIZE;
             b[2].x -= Block.SIZE;
             b[3].x -= Block.SIZE;
-
+            }
             KeyHandle.leftPressed = false;
         }
         if(KeyHandle.rightPressed){
+            if(rightCollision == false){
             b[0].x += Block.SIZE;
             b[1].x += Block.SIZE;
             b[2].x += Block.SIZE;
             b[3].x += Block.SIZE;
-
+            }
             KeyHandle.rightPressed = false;
         }
 

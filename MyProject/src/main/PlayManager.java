@@ -5,8 +5,13 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+//import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Random;
+
+
 
 import mino.Block;
 import mino.Mino;
@@ -19,7 +24,7 @@ import mino.Mino_Z1;
 import mino.Mino_Z2;
 
 public class PlayManager {
-
+    
     //main play area
     final int WIDTH = 360;
     final int HEIGHT = 600;
@@ -27,6 +32,15 @@ public class PlayManager {
     public static int right_x;
     public static int top_y;
     public static int bottom_y;
+
+    // //history score area
+    // final int SCORE_WIDTH = 200;
+    // final int SCORE_HEIGHT = 500;
+    // final int SCORE_MARGIN = 100;
+    // public static int score_left_x; 
+    // public static int score_right_x;
+    // public static int score_top_y;
+    // public static int score_bottom_y;
 
     //mino 
     Mino currentMino;
@@ -36,6 +50,7 @@ public class PlayManager {
     final int NEXTMINO_X;
     final int NEXTMINO_Y;
     public static ArrayList<Block> staticBlocks = new ArrayList<>();
+    private Queue<Integer> historyScores = new LinkedList<>();
 
     //others
     public static int dropInterval = 60;// mino drop every 60 frames
@@ -48,23 +63,90 @@ public class PlayManager {
 
     //score
     int level = 1;
-    int lines;
-    int score;
+    int lines = 1;
+    int score = 0;
+    int lastScore = 0;
+    // int Rank1 = 0;
+    // int Rank2 = 0;
+    // int Rank3 = 0;
+    // int Rank4 = 0;
+    // int Rank5 = 0;
+    // int Rank6 = 0;
+    // int Rank7 = 0;
+    // int Rank8 = 0;
+    // int Rank9 = 0;
+    // int Rank10 = 0;
+    int[] ranks = new int[10]; // Mảng lưu 10 rank
+
+
+
     
+    public void reset() {
+
+        lastScore = score;
+        if (score > 0) { 
+            updateRanks(score); // Lưu điểm hiện tại vào mảng ranks
+        }
+        sortRanks();
+        gameOver = false;
+        score = 0;
+        level = 1;
+        lines = 0;
+        dropInterval = 60;
+        staticBlocks.clear(); // Xóa tất cả các block tĩnh
+    
+        // Tạo lại mino hiện tại và tiếp theo
+        currentMino = pickMino();
+        currentMino.setXY(MINO_START_X, MINO_START_Y);
+    
+        nextMino = pickMino();
+        nextMino.setXY(NEXTMINO_X, NEXTMINO_Y);
+    }
+
+    
+    private void addScoreToHistory(int score) {
+        if (historyScores.size() >= 10) {
+            historyScores.poll(); // Xóa điểm cũ nhất nếu đã đạt giới hạn 10
+        }
+        historyScores.offer(score); // Thêm điểm mới vào hàng đợi
+    }
+
+    private void updateRanks(int lastScore) {
+        // Dịch các giá trị xuống
+        for (int i = ranks.length - 1; i > 0; i--) {
+            ranks[i] = ranks[i - 1];
+        }
+    
+        // Thêm điểm mới vào Rank 1
+        ranks[0] = lastScore;
+    }
+
+    //bubble
+    private void sortRanks() {
+        for (int i = 0; i < ranks.length - 1; i++) {
+            for (int j = i + 1; j < ranks.length; j++) {
+                if (ranks[i] < ranks[j]) { // Đổi chỗ nếu giá trị hiện tại nhỏ hơn giá trị tiếp theo
+                    int temp = ranks[i];
+                    ranks[i] = ranks[j];
+                    ranks[j] = temp;
+                }
+            }
+        }
+    }
+    
+
     public PlayManager(){
         //main play area frame
-
-
         left_x = (GamePanel.WIDTH/2) - (WIDTH/2); 
         right_x = left_x + WIDTH;
         top_y = 50;              
         bottom_y = top_y + HEIGHT;
 
-        //vị trí ban đầu
+        //vị trí ban đầu cua mino
         MINO_START_X = left_x + (WIDTH/2) - Block.SIZE;
         MINO_START_Y = top_y + Block.SIZE;
 
-        //vị trí tiếp theo
+        //vị trí tiếp theo cuar mino
         NEXTMINO_X = right_x + 175;
         NEXTMINO_Y = top_y + 500;
 
@@ -177,19 +259,36 @@ public class PlayManager {
     }
 
     //draw play area frame
-    public void draw (Graphics2D g2){
+    public void drawAreaPlay (Graphics2D g2){
         g2.setColor(Color.white);
         g2.setStroke(new BasicStroke(4f));
         g2.drawRect(left_x-4, top_y-4, WIDTH+8, HEIGHT+8);
-    
 
+        //draw history score frame
+        int x1 = right_x - 750;
+        int y1 = top_y;
+        g2.drawRect(x1, y1, 350, 500);
+        g2.setFont(new Font("Arial", Font.PLAIN, 30));
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2.drawString("History Score", x1 + 80, y1 + 45);
+        g2.drawString("Current Score: " + score, x1 + 20, y1 + 85);
+        g2.drawString("Last Score: " + lastScore, x1 + 20, y1 + 125);
+        int rankStartY = y1 + 160; // Bắt đầu hiển thị rank bên dưới "Last Score"
+        g2.setFont(new Font("Arial", Font.PLAIN, 20)); // Font nhỏ hơn cho danh sách
+            for (int i = 0; i < ranks.length; i++) {
+                g2.drawString("Rank " + (i + 1) + ": " + ranks[i] + " points", x1 + 20, rankStartY + i * 30);
+}
+        addScoreToHistory(score);
+        //drawHistoryScores(g2, x1, y1);
+
+    
         //draw next mino frame
         int x = right_x + 100;
         int y = bottom_y - 200;
         g2.drawRect(x, y, 200, 200);
         g2.setFont(new Font("Arial", Font.PLAIN, 30));
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        g2.drawString("NEXT", x+60, y+60);
+        g2.drawString("NEXT", x+60, y + 60);
 
         //draw score frame
         g2.drawRect(x, top_y, 250, 300);
@@ -220,7 +319,7 @@ public class PlayManager {
             x = left_x + 25; 
             y = top_y + 320;
             g2.drawString("Game Over", x, y);
-
+            addScoreToHistory(score);
         } else if (KeyHandle.pausePressed){
             x = left_x + 70;
             y = top_y + 320;
@@ -244,4 +343,5 @@ public class PlayManager {
         }
 
     }
+
 }

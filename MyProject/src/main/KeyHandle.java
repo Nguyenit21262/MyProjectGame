@@ -8,10 +8,7 @@ public class KeyHandle implements KeyListener {
     public static boolean upPressed, downPressed, leftPressed, rightPressed, pausePressed;
 
     @Override
-    public void keyTyped(KeyEvent e) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'keyTyped'");
-    }
+    public void keyTyped(KeyEvent e) {}
 
     @Override
     public void keyPressed(KeyEvent e) {
@@ -37,9 +34,6 @@ public class KeyHandle implements KeyListener {
     }
 
     @Override
-    public void keyReleased(KeyEvent e) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'keyReleased'");
-    }
+    public void keyReleased(KeyEvent e) {}
 
 }
